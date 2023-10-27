@@ -8,7 +8,7 @@ class Modell(nn.Module):
 
     def __init__(self):
         super(Modell, self).__init__()
-
+        self.name = "Model-2"
         self.features = nn.Sequential(
 
             nn.Conv2d(3, 32, 3),
