@@ -15,14 +15,13 @@ import shutil
 from PIL import Image
 from collections import Counter
 import matplotlib.pyplot as plt
-# import matplotlib as plt
-
-
 
 
 ###################################################################  初始化
 print("Initializing...")
-num_epochs = 20
+
+project_name = "p1"
+num_epochs = 100
 SEED = 114514
 random.seed(SEED)
 np.random.seed(SEED)
@@ -62,6 +61,7 @@ print("Preprocessing...")
 train_ratio = 0.8
 test_ratio = 0.2
 valid_ratio = 0.9
+
 # 对训练集/测试集进行预处理
 train_transforms = transforms.Compose([
     transforms.Resize(64),
@@ -78,82 +78,61 @@ test_transforms = transforms.Compose([
     transforms.Normalize(mean=mean, std=std)
     ])
 
-image_data = datasets.ImageFolder(data_path)
+##################################################################   数据读取、拆分             
+# image_data = datasets.ImageFolder(data_path)
 
-# image_data_test_transforms = datasets.ImageFolder(data_path)
-train_size = int(len(image_data) * train_ratio)
-test_size = len(image_data) - train_size
+# train_size = int(len(image_data) * train_ratio)
+# test_size = len(image_data) - train_size
 
-#获得training data
-train_data, test_data = data.random_split(image_data, [train_size, test_size])
-# train_data = copy.deepcopy(train_data)
-# test_data = copy.deepcopy(test_data)
-# test_data.dataset.transform = test_transforms
-# print(type(test_data))
-# print((test_data[0][1]))
-# test_data[0][0].show()
-n_train_size = int(train_size * valid_ratio)
-n_valid_size = train_size - n_train_size
-train_data, valid_data = data.random_split(train_data, [n_train_size, n_valid_size])
+# #获得training data
+# train_data, test_data = data.random_split(image_data, [train_size, test_size])
 
-# train_data = copy.deepcopy(train_data)
-# valid_data = copy.deepcopy(valid_data)
-# valid_data.dataset.transform = test_transforms
-# print(type(valid_data))
-# print(type(valid_data[0][0]))
+# n_train_size = int(train_size * valid_ratio)
+# n_valid_size = train_size - n_train_size
+# train_data, valid_data = data.random_split(train_data, [n_train_size, n_valid_size])
 
-# train_data.dataset.transform = train_transforms
-# print(type(train_data))
-# print(type(train_data[0][0]))
-# 对不同集设置对应的transform的方式
-print("Saving split data to local work directories")
-if os.path.join(os.getcwd(), "split_data", "train"):
-    shutil.rmtree(os.path.join(os.getcwd(), "split_data", "train"), ignore_errors=True)
-if os.path.join(os.getcwd(), "split_data", "test"):
-    shutil.rmtree(os.path.join(os.getcwd(), "split_data", "test"), ignore_errors=True)
-if os.path.join(os.getcwd(), "split_data", "valid"):
-    shutil.rmtree(os.path.join(os.getcwd(), "split_data", "valid"),ignore_errors=True)
+# # 对不同集设置对应的transform的方式
+# print("Saving split data to local work directories")
+# if os.path.join(os.getcwd(), "split_data", "train"):
+#     shutil.rmtree(os.path.join(os.getcwd(), "split_data", "train"), ignore_errors=True)
+# if os.path.join(os.getcwd(), "split_data", "test"):
+#     shutil.rmtree(os.path.join(os.getcwd(), "split_data", "test"), ignore_errors=True)
+# if os.path.join(os.getcwd(), "split_data", "valid"):
+#     shutil.rmtree(os.path.join(os.getcwd(), "split_data", "valid"),ignore_errors=True)
 
-for i in range(0, len(true_labels)):
-    os.makedirs(os.path.join(os.getcwd(), "split_data", "train", true_labels[i][1]))
-    os.makedirs(os.path.join(os.getcwd(), "split_data", "test", true_labels[i][1]))
-    os.makedirs(os.path.join(os.getcwd(), "split_data", "valid", true_labels[i][1]))
+# for i in range(0, len(true_labels)):
+#     os.makedirs(os.path.join(os.getcwd(), "split_data", "train", true_labels[i][1]))
+#     os.makedirs(os.path.join(os.getcwd(), "split_data", "test", true_labels[i][1]))
+#     os.makedirs(os.path.join(os.getcwd(), "split_data", "valid", true_labels[i][1]))
 
 
 
-for i in range(0, len(train_data)):
-    img = train_data[i][0]
-    # print(type(img))
-    img.save(os.path.join(os.getcwd(), "split_data", "train", true_labels[train_data[i][1]][1], (str(i)+".jpg")))
+# for i in range(0, len(train_data)):
+#     img = train_data[i][0]
+#     # print(type(img))
+#     img.save(os.path.join(os.getcwd(), "split_data", "train", true_labels[train_data[i][1]][1], (str(i)+".jpg")))
 
-for i in range(0, len(test_data)):
-    img = test_data[i][0]
-    img.save(os.path.join(os.getcwd(), "split_data", "test", true_labels[test_data[i][1]][1], (str(i)+".jpg")))
+# for i in range(0, len(test_data)):
+#     img = test_data[i][0]
+#     img.save(os.path.join(os.getcwd(), "split_data", "test", true_labels[test_data[i][1]][1], (str(i)+".jpg")))
 
-for i in range(0, len(valid_data)):
-    img = valid_data[i][0]
-    img.save(os.path.join(os.getcwd(), "split_data", "valid", true_labels[valid_data[i][1]][1], (str(i)+".jpg")))
+# for i in range(0, len(valid_data)):
+#     img = valid_data[i][0]
+#     img.save(os.path.join(os.getcwd(), "split_data", "valid", true_labels[valid_data[i][1]][1], (str(i)+".jpg")))
+
 
 train_data = datasets.ImageFolder(os.path.join(split_data_path, "train"), transform=train_transforms)
-
 test_data = datasets.ImageFolder(os.path.join(split_data_path, "test"), transform=test_transforms)
 valid_data = datasets.ImageFolder(os.path.join(split_data_path, "valid"), transform=test_transforms)
-# valid_data 是 training data 的子集， 需要使用deepcopy防止影响到training data
-# valid_data = copy.deepcopy(valid_data)
-# valid_data.dataset.transform = test_transforms
+
 print("Size of training data:\t", len(train_data))
 print("Size of test data:\t", len(test_data))
 print("Size of valid data:\t", len(valid_data))
-# print(train_data.class_to_idx)
-# print(test_data.class_to_idx)
-# print(valid_data.class_to_idx)
-
-# print(len(train_data), len(test_data), len(valid_data))
 
 
 #将训练数据加载到一个数据加载器（DataLoader）中
 BATCH_SIZE = 128
-# train_loader = data.DataLoader()
+
 train_iterator = data.DataLoader(train_data,
                                  shuffle=True,
                                  batch_size=BATCH_SIZE)
@@ -162,9 +141,8 @@ valid_iterator = data.DataLoader(valid_data,
                                  batch_size=BATCH_SIZE)
 
 test_iterator = data.DataLoader(test_data,
-                                batch_size=BATCH_SIZE)
+                                 batch_size=BATCH_SIZE)
 
-print(train_iterator)
 
 x_axis = []
 acc = []
@@ -173,18 +151,15 @@ for i in range(1,num_epochs+1):
 
 ##############################################################################   建模
 print("Building model...")
-model = MyModel.Modell()
 
+
+model = MyModel.Modell()
 # 将你的网络模型移动到相应的设备上
 model = model.to(device)
 # 定义损失函数，使用交叉熵损失函数
 criterion = nn.CrossEntropyLoss()
-
 # 选择优化器，使用Adam优化器
 optimizer = optim.Adam(model.parameters(), lr=0.001)
-
-
-
 
 ##############################################################################   训练
 print("Training...")
@@ -277,11 +252,11 @@ print(f'Accuracy of the model on the test data: {accuracy}%')
 
 plt.plot(x_axis, acc)
 plt.show()
-plt.savefig(f"figs/{model.name}.png")
+plt.savefig(f"figs/{project_name}_{model.name}-{BATCH_SIZE}_{num_epochs}.png")
 
 
 print("Saving model...")
-torch.save(model, f'model_outputs/{model.name}.pth')
+torch.save(model, f'model_outputs/{project_name}_{model.name}-{BATCH_SIZE}_{num_epochs}.pth')
 print("Finish")
 
 
