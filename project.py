@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 print("Initializing...")
 
 project_name = "p1"
-num_epochs = 100
+num_epochs = 1
 SEED = 114514
 random.seed(SEED)
 np.random.seed(SEED)
@@ -60,7 +60,7 @@ for label in os.listdir(data_path):
 print("Preprocessing...")
 train_ratio = 0.8
 test_ratio = 0.2
-valid_ratio = 0.9
+valid_ratio = 0.8
 
 # 对训练集/测试集进行预处理
 train_transforms = transforms.Compose([
@@ -78,7 +78,7 @@ test_transforms = transforms.Compose([
     transforms.Normalize(mean=mean, std=std)
     ])
 
-##################################################################   数据读取、拆分             
+#################################################################   数据读取、拆分             
 # image_data = datasets.ImageFolder(data_path)
 
 # train_size = int(len(image_data) * train_ratio)
@@ -159,7 +159,8 @@ model = model.to(device)
 # 定义损失函数，使用交叉熵损失函数
 criterion = nn.CrossEntropyLoss()
 # 选择优化器，使用Adam优化器
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+LEARNING_RATE = 0.0002
+optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
 ##############################################################################   训练
 print("Training...")
@@ -231,6 +232,7 @@ total = 0
 
 # 不需要计算梯度
 with torch.no_grad():
+    wrong = []
     for inputs, labels in test_iterator:  # 遍历测试数据加载器
 
         inputs = inputs.to(device)  # 将输入数据移动到正确的设备上
@@ -239,24 +241,74 @@ with torch.no_grad():
 
         # 前向传播
         outputs = model(inputs)
+
+
         # 获取预测结果
         _, predicted = torch.max(outputs.data, 1)
         # 更新统计变量
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
 
+        for i in range(len(labels)):
+            if(predicted[i] != labels[i]):
+                thiss = (inputs[i] + 1) / 2
+                wrong.append(thiss)
+
+
+
+
+for item in range(len(wrong)):
+    numpy_img = wrong[item].cpu().mul(255).byte().numpy().transpose((1, 2, 0))
+    img = Image.fromarray(numpy_img)
+    img.save(f'wrongImg/output{item}.jpg')
+
 # 计算准确率
 accuracy = 100 * correct / total
 
 print(f'Accuracy of the model on the test data: {accuracy}%')
 
-plt.plot(x_axis, acc)
-plt.show()
-plt.savefig(f"figs/{project_name}_{model.name}-{BATCH_SIZE}_{num_epochs}.png")
+
+# # 找到最大值的索引
+# max_index = np.argmax(acc)
+
+# # 找到最大值对应的x和y坐标
+# max_x = x_axis[max_index]
+# max_y = acc[max_index]
+
+# plt.plot(x_axis, acc)
+# # 添加水平和垂直的虚线
+# plt.axhline(y=max_y, color='r', linestyle='--', linewidth=0.5)
+# plt.axvline(x=max_x, color='r', linestyle='--', linewidth=0.5)
+
+# # 在横纵坐标轴上标出相应的值
+# xticks = list(plt.gca().get_xticks())
+# yticks = list(plt.gca().get_yticks())
+
+# if max_x not in xticks:
+#     xticks.append(max_x)
+# if max_y not in yticks:
+#     yticks.append(max_y)
+
+# plt.gca().set_xticks(xticks)
+# plt.gca().set_yticks(yticks)
+
+# plt.xlim(min(x_axis), max(x_axis))
+# plt.ylim(min(acc),1.0000)
 
 
-print("Saving model...")
-torch.save(model, f'model_outputs/{project_name}_{model.name}-{BATCH_SIZE}_{num_epochs}.pth')
-print("Finish")
+
+
+
+# plt.savefig(f"figs/{project_name}_{model.name}--{BATCH_SIZE}_{num_epochs}_{LEARNING_RATE}.png")
+# plt.show()
+
+# with open(f"figs/{project_name}_{model.name}--{BATCH_SIZE}_{num_epochs}_{LEARNING_RATE}.csv","w") as f:
+#     f.write("epoch,accuracy\n")
+#     for i in range(x_axis):
+#         f.write(f"{x_axis[i]},{acc[i]}\n")
+
+# print("Saving model...")
+# torch.save(model, f'model_outputs/{project_name}_{model.name}--{BATCH_SIZE}_{num_epochs}_{LEARNING_RATE}.pth')
+# print("Finish")
 
 
