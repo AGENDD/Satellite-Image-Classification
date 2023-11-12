@@ -10,7 +10,7 @@ import matplotlib as plt
 import os
 import random
 import copy
-import MyModel
+
 import shutil
 from PIL import Image
 from collections import Counter
@@ -37,3 +37,8 @@ def getStat(train_data):
     std.div_(len(train_data))
 
     return list(mean.numpy()), list(std.numpy())
+
+def denormalize(images, means, stds):
+    means = torch.tensor(means).reshape(1, 3, 1, 1)
+    stds = torch.tensor(stds).reshape(1, 3, 1, 1)
+    return images * stds + means

@@ -1,27 +1,29 @@
-﻿import torch
+﻿import PIL.Image
+import torch
 from torch import nn
 import torch.optim as optim
 import torch.utils.data as data
 import torchvision.transforms as transforms
+import torchvision.models as models
 import torchvision.datasets as datasets
 import numpy as np
 import os
 import random
 import copy
 
-import models.MyModel as MyModel#这里切换模型
+
 
 import shutil
 from PIL import Image
 from collections import Counter
 import matplotlib.pyplot as plt
-
+import functions
 
 ###################################################################  初始化
 print("Initializing...")
 
-project_name = "p1"
-num_epochs = 1
+project_name = "pvgg"
+num_epochs = 200
 SEED = 114514
 random.seed(SEED)
 np.random.seed(SEED)
@@ -78,6 +80,7 @@ test_transforms = transforms.Compose([
     transforms.Normalize(mean=mean, std=std)
     ])
 
+transform_tensor_to_PIL = transforms.ToPILImage()
 #################################################################   数据读取、拆分             
 # image_data = datasets.ImageFolder(data_path)
 
@@ -153,7 +156,9 @@ for i in range(1,num_epochs+1):
 print("Building model...")
 
 
-model = MyModel.Modell()
+model = models.vgg19()
+
+
 # 将你的网络模型移动到相应的设备上
 model = model.to(device)
 # 定义损失函数，使用交叉熵损失函数
@@ -226,13 +231,19 @@ print("Testing...")
 # 设置模型为评估模式
 model.eval()
 
+
 # 初始化统计变量
 correct = 0
 total = 0
+wrong = []
+
+# for i in range(0, 4):
+#    for j in range(0, 4):
+#        os.makedirs(os.path.join(os.getcwd(), "wrongImg", true_labels[i][1], true_labels[j][1]))
 
 # 不需要计算梯度
 with torch.no_grad():
-    wrong = []
+
     for inputs, labels in test_iterator:  # 遍历测试数据加载器
 
         inputs = inputs.to(device)  # 将输入数据移动到正确的设备上
@@ -249,18 +260,17 @@ with torch.no_grad():
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
 
-        for i in range(len(labels)):
-            if(predicted[i] != labels[i]):
-                thiss = (inputs[i] + 1) / 2
-                wrong.append(thiss)
+        # for i in range(len(labels)):
+        #     if(predicted[i] != labels[i]):
+
+        #         curr_tensor = functions.denormalize(inputs[i].cpu(), means=mean, stds=std)
+        #         curr_image = transform_tensor_to_PIL(curr_tensor[0])
+        #         #print(type(curr_image))
+        #         # print(type(curr_image))
+        #         # curr_image = PIL.Image.fromarray(curr_image)
+        #         curr_image.save(f'wrongImg/{true_labels[labels[i]][1]}/{true_labels[predicted[i]][1]}/output{i}.jpg')
 
 
-
-
-for item in range(len(wrong)):
-    numpy_img = wrong[item].cpu().mul(255).byte().numpy().transpose((1, 2, 0))
-    img = Image.fromarray(numpy_img)
-    img.save(f'wrongImg/output{item}.jpg')
 
 # 计算准确率
 accuracy = 100 * correct / total
@@ -268,47 +278,47 @@ accuracy = 100 * correct / total
 print(f'Accuracy of the model on the test data: {accuracy}%')
 
 
-# # 找到最大值的索引
-# max_index = np.argmax(acc)
+# 找到最大值的索引
+max_index = np.argmax(acc)
 
-# # 找到最大值对应的x和y坐标
-# max_x = x_axis[max_index]
-# max_y = acc[max_index]
+# 找到最大值对应的x和y坐标
+max_x = x_axis[max_index]
+max_y = acc[max_index]
 
-# plt.plot(x_axis, acc)
-# # 添加水平和垂直的虚线
-# plt.axhline(y=max_y, color='r', linestyle='--', linewidth=0.5)
-# plt.axvline(x=max_x, color='r', linestyle='--', linewidth=0.5)
+plt.plot(x_axis, acc)
+# 添加水平和垂直的虚线
+plt.axhline(y=max_y, color='r', linestyle='--', linewidth=0.5)
+plt.axvline(x=max_x, color='r', linestyle='--', linewidth=0.5)
 
-# # 在横纵坐标轴上标出相应的值
-# xticks = list(plt.gca().get_xticks())
-# yticks = list(plt.gca().get_yticks())
+# 在横纵坐标轴上标出相应的值
+xticks = list(plt.gca().get_xticks())
+yticks = list(plt.gca().get_yticks())
 
-# if max_x not in xticks:
-#     xticks.append(max_x)
-# if max_y not in yticks:
-#     yticks.append(max_y)
+if max_x not in xticks:
+    xticks.append(max_x)
+if max_y not in yticks:
+    yticks.append(max_y)
 
-# plt.gca().set_xticks(xticks)
-# plt.gca().set_yticks(yticks)
+plt.gca().set_xticks(xticks)
+plt.gca().set_yticks(yticks)
 
-# plt.xlim(min(x_axis), max(x_axis))
-# plt.ylim(min(acc),1.0000)
-
-
+plt.xlim(min(x_axis), max(x_axis))
+plt.ylim(min(acc),1.0000)
 
 
 
-# plt.savefig(f"figs/{project_name}_{model.name}--{BATCH_SIZE}_{num_epochs}_{LEARNING_RATE}.png")
-# plt.show()
 
-# with open(f"figs/{project_name}_{model.name}--{BATCH_SIZE}_{num_epochs}_{LEARNING_RATE}.csv","w") as f:
-#     f.write("epoch,accuracy\n")
-#     for i in range(x_axis):
-#         f.write(f"{x_axis[i]},{acc[i]}\n")
+
+plt.savefig(f"figs/{project_name}_VGG--{BATCH_SIZE}_{num_epochs}_{LEARNING_RATE}.png")
+plt.show()
+
+with open(f"figs/{project_name}_VGG--{BATCH_SIZE}_{num_epochs}_{LEARNING_RATE}.csv","w") as f:
+    f.write("epoch,accuracy\n")
+    for i in range(len(x_axis)):
+        f.write(f"{x_axis[i]},{acc[i]}\n")
 
 # print("Saving model...")
-# torch.save(model, f'model_outputs/{project_name}_{model.name}--{BATCH_SIZE}_{num_epochs}_{LEARNING_RATE}.pth')
-# print("Finish")
+# torch.save(model, f'model_outputs/{project_name}_VGG--{BATCH_SIZE}_{num_epochs}_{LEARNING_RATE}.pth')
+print("Finish")
 
 

@@ -1,4 +1,4 @@
-﻿import numpy
+import numpy
 import torch
 from torch import nn
 import torch.optim as optim
@@ -56,5 +56,4 @@ class Modell(nn.Module):
 
         output = self.classifier(x)
 
-        
         return output
